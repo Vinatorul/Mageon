@@ -4,7 +4,7 @@ use sdl2::keyboard::Keycode;
 use dungeon_generator::{BSPGenerator, Room, DungeonGenerator, RoomType};
 use std::collections::HashSet;
 use unit::Unit;
-use common::TILE_SIZE;
+use common::*;
 
 const TEMP_WIDTH: u32 = 800;
 const TEMP_HEIGHT: u32 = 600;
@@ -83,14 +83,19 @@ impl Game {
         for room in self.rooms.iter() {
             let layer_ind = match room.room_type {
                 RoomType::BasicRoom => 2,
-                RoomType::Coridor => 3,
+                RoomType::Coridor => 2,
                 _ => unreachable!(),
             };
             let mut x = (room.x/TILE_SIZE)*TILE_SIZE;
             while x < room.x + room.width {
                 let mut y = (room.y/TILE_SIZE)*TILE_SIZE;
                 while y < room.y + room.height {
-                    self.tiles.add_tile(3*x as i32, 3*y as i32, TILE_SIZE*3, TILE_SIZE*3, layer_ind, TileType::Floor(1));
+                    self.tiles.add_tile((TILE_SCALE*x) as i32,
+                                        (TILE_SCALE*y) as i32,
+                                        TILE_SIZE*TILE_SCALE,
+                                        TILE_SIZE*TILE_SCALE,
+                                        layer_ind,
+                                        TileType::Floor(1));
                     y += TILE_SIZE;
                 }
                 x += TILE_SIZE;
