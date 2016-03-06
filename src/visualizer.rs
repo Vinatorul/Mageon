@@ -24,14 +24,16 @@ impl<'a> Visualizer<'a> {
             //let _ = self.renderer.draw_rect(rect);
         //}
 
+        let x_offset = game.x_offset;
+        let y_offset = game.y_offset;
         let _ = self.renderer.set_draw_color(Color::RGB(0, 0, 255));
-        for tile in game.tiles.get_tiles(0., 0., 800, 600, 2).iter() {
-            let rect = Rect::new(tile.x, tile.y, tile.width, tile.height).unwrap().unwrap();
+        for tile in game.tiles.get_tiles(x_offset as f64, y_offset as f64, 800, 600, 2).iter() {
+            let rect = Rect::new(tile.x - x_offset, tile.y - y_offset, tile.width, tile.height).unwrap().unwrap();
             let _ = self.renderer.draw_rect(rect);
         }
         let _ = self.renderer.set_draw_color(Color::RGB(0, 255, 0));
-        for tile in game.tiles.get_tiles(0., 0., 800, 600, 3).iter() {
-            let rect = Rect::new(tile.x, tile.y, tile.width, tile.height).unwrap().unwrap();
+        for tile in game.tiles.get_tiles(x_offset as f64, y_offset as f64, 800, 600, 3).iter() {
+            let rect = Rect::new(tile.x - x_offset, tile.y - y_offset, tile.width, tile.height).unwrap().unwrap();
             let _ = self.renderer.draw_rect(rect);
         }
 

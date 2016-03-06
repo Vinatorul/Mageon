@@ -23,7 +23,7 @@ fn main() {
     let mut last_tick: DateTime<UTC> = UTC::now();
 
     // Create a window
-    let window  = match video_ctx.window("game_proto", 800, 600).position_centered().opengl().build() {
+    let window  = match video_ctx.window("Mageon", 800, 600).position_centered().opengl().build() {
         Ok(window) => window,
         Err(err)   => panic!("failed to create window: {}", err)
     };
@@ -56,6 +56,6 @@ fn main() {
         }
         // println!("{}", 1000.0/(ms as f64));
         visualizer.draw(&game, (lag as f64)/(MS_PER_UPDATE as f64));
-        std::thread::sleep(Duration::from_millis(1));
+        std::thread::sleep(Duration::from_millis(100));
     }
 }
