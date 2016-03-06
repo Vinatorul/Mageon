@@ -6,6 +6,7 @@ extern crate dungeon_generator;
 
 mod visualizer;
 mod game;
+mod unit;
 
 use sdl2::event::Event;
 use visualizer::Visualizer;
