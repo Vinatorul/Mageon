@@ -26,8 +26,9 @@ impl<'a> Visualizer<'a> {
                              TILE_SIZE*TILE_SCALE - 10).unwrap().unwrap();
         let _ = self.renderer.draw_rect(rect);
 
-        let x_offset = game.player.tile.0*(TILE_SCALE*TILE_SIZE) as i32 - (DEF_WINDOW_WIDTH as i32)/2;
-        let y_offset = game.player.tile.1*(TILE_SCALE*TILE_SIZE) as i32 - (DEF_WINDOW_HEIGHT as i32)/2;
+        let (mut x_offset, mut y_offset) = game.player.global_pos();
+        x_offset -= (DEF_WINDOW_WIDTH as i32)/2;
+        y_offset -= (DEF_WINDOW_HEIGHT as i32)/2;
         let _ = self.renderer.set_draw_color(Color::RGB(0, 0, 170));
         for tile in game.tiles.get_tiles(x_offset as f64,
                                          y_offset as f64,

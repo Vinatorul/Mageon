@@ -5,10 +5,12 @@ use dungeon_generator::{BSPGenerator, Room, DungeonGenerator, RoomType};
 use std::collections::HashSet;
 use unit::Unit;
 use common::*;
+use rand::{SeedableRng, StdRng, Rng};
 
 const TEMP_WIDTH: u32 = 800;
 const TEMP_HEIGHT: u32 = 600;
 
+#[derive(Debug)]
 pub enum TileType {
     None,
     Floor(i32),
@@ -58,16 +60,24 @@ impl Game {
         self.pressed_keys.insert(key);
         match key {
             Keycode::Up => {
-                self.player.tile.1 -= 1;
+                if self.check_player_move((0, -1)) {
+                    self.player.tile.1 -= 1;
+                }
             },
             Keycode::Down => {
-                self.player.tile.1 += 1;
+                if self.check_player_move((0, 1)) {
+                    self.player.tile.1 += 1;
+                }
             },
             Keycode::Left => {
-                self.player.tile.0 -= 1;
+                if self.check_player_move((-1, 0)) {
+                    self.player.tile.0 -= 1;
+                }
             },
             Keycode::Right => {
-                self.player.tile.0 += 1;
+                if self.check_player_move((1, 0)) {
+                    self.player.tile.0 += 1;
+                }
             },
             _ => return,
         }
@@ -79,7 +89,11 @@ impl Game {
     }
 
     pub fn generate_level(&mut self, seed: &[usize]) {
+        let mut rng: StdRng = SeedableRng::from_seed(seed);
         self.rooms = BSPGenerator::default().min_room_splittable_size(100).coridor_width(15).generate(seed, TEMP_WIDTH, TEMP_HEIGHT);
+        let players_start_room = &self.rooms[rng.gen_range(0, self.rooms.len())];
+        self.player.tile = ((rng.gen_range(players_start_room.x, players_start_room.x + players_start_room.width)/TILE_SIZE) as i32,
+                            (rng.gen_range(players_start_room.y, players_start_room.y + players_start_room.height)/TILE_SIZE) as i32);
         for room in self.rooms.iter() {
             let layer_ind = match room.room_type {
                 RoomType::BasicRoom => 2,
@@ -101,5 +115,17 @@ impl Game {
                 x += TILE_SIZE;
             }
         }
+    }
+
+    fn check_player_move(&self, delta: (i32, i32)) -> bool {
+        let (pos_x, pos_y) = self.player.global_pos();
+        let tiles = self.tiles.get_tiles((pos_x - (TILE_SIZE*TILE_SCALE) as i32) as f64,
+                                         (pos_y - (TILE_SIZE*TILE_SCALE) as i32) as f64,
+                                         (TILE_SIZE*TILE_SCALE*3) as i32,
+                                         (TILE_SIZE*TILE_SCALE*3) as i32,
+                                         2);
+        let new_pos = (pos_x + delta.0*(TILE_SCALE*TILE_SIZE) as i32,
+                       pos_y + delta.1*(TILE_SCALE*TILE_SIZE) as i32);
+        tiles.contains_key(&new_pos)
     }
 }
