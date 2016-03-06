@@ -26,7 +26,7 @@ dependencies = [
 [[package]]
 name = "dungeon-generator"
 version = "0.1.0"
-source = "git+https://github.com/Vinatorul/dungeon-generator-rs.git#6de8a5b0e885bd1f73b273332771c508740f5fb9"
+source = "git+https://github.com/Vinatorul/dungeon-generator-rs.git#7ef18084ef812408bde02f2bbc6103dfb36713ac"
 dependencies = [
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
