@@ -3,10 +3,11 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use dungeon_generator::{BSPGenerator, Room, DungeonGenerator, RoomType};
 use std::collections::HashSet;
+use unit::Unit;
+use common::TILE_SIZE;
 
 const TEMP_WIDTH: u32 = 800;
 const TEMP_HEIGHT: u32 = 600;
-const TILE_SIZE: u32 = 10;
 
 pub enum TileType {
     None,
@@ -21,8 +22,7 @@ impl Default for TileType {
 
 pub struct Game {
     pub tiles: TileEngine<TileType>,
-    pub x_offset: i32,
-    pub y_offset: i32,
+    pub player: Unit,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
 }
@@ -31,8 +31,7 @@ impl Game {
     pub fn new() -> Game {
         Game {
             tiles: TileEngine::<TileType>::default(),
-            x_offset: 0,
-            y_offset: 0,
+            player: Unit::new((0, 0)),
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
         }
@@ -59,16 +58,16 @@ impl Game {
         self.pressed_keys.insert(key);
         match key {
             Keycode::Up => {
-                self.y_offset -= 3*TILE_SIZE as i32;
+                self.player.tile.1 -= 1;
             },
             Keycode::Down => {
-                self.y_offset += 3*TILE_SIZE as i32;
+                self.player.tile.1 += 1;
             },
             Keycode::Left => {
-                self.x_offset -= 3*TILE_SIZE as i32;
+                self.player.tile.0 -= 1;
             },
             Keycode::Right => {
-                self.x_offset += 3*TILE_SIZE as i32;
+                self.player.tile.0 += 1;
             },
             _ => return,
         }

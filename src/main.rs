@@ -7,6 +7,7 @@ extern crate dungeon_generator;
 mod visualizer;
 mod game;
 mod unit;
+mod common;
 
 use sdl2::event::Event;
 use visualizer::Visualizer;
@@ -24,7 +25,7 @@ fn main() {
     let mut last_tick: DateTime<UTC> = UTC::now();
 
     // Create a window
-    let window  = match video_ctx.window("Mageon", 800, 600).position_centered().opengl().build() {
+    let window  = match video_ctx.window("Mageon", common::DEF_WINDOW_WIDTH, common::DEF_WINDOW_HEIGHT).position_centered().opengl().build() {
         Ok(window) => window,
         Err(err)   => panic!("failed to create window: {}", err)
     };

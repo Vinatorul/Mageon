@@ -2,6 +2,7 @@ use sdl2::render::Renderer;
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use game::Game;
+use common;
 
 pub struct Visualizer<'a> {
     renderer: Renderer<'a>,
@@ -24,8 +25,8 @@ impl<'a> Visualizer<'a> {
             //let _ = self.renderer.draw_rect(rect);
         //}
 
-        let x_offset = game.x_offset;
-        let y_offset = game.y_offset;
+        let x_offset = game.player.tile.0*3*common::TILE_SIZE as i32;
+        let y_offset = game.player.tile.1*3*common::TILE_SIZE as i32;
         let _ = self.renderer.set_draw_color(Color::RGB(0, 0, 255));
         for tile in game.tiles.get_tiles(x_offset as f64, y_offset as f64, 800, 600, 2).values() {
             let rect = Rect::new(tile.x - x_offset, tile.y - y_offset, tile.width, tile.height).unwrap().unwrap();

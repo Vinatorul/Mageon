@@ -1,13 +1,11 @@
-struct Unit {
-    x: i32,
-    y: i32,
+pub struct Unit {
+    pub tile: (i32, i32),
 }
 
 impl Unit {
-    fn new(x: i32, y: i32) -> Unit {
+    pub fn new(tile: (i32, i32)) -> Unit {
         Unit {
-            x: x,
-            y: y,
+            tile: tile,
         }
     }
 }
