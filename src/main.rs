@@ -3,6 +3,7 @@ extern crate rand;
 extern crate tile_engine;
 extern crate chrono;
 extern crate dungeon_generator;
+extern crate sdl2_image;
 
 mod visualizer;
 mod game;
@@ -14,6 +15,7 @@ use visualizer::Visualizer;
 use game::Game;
 use chrono::{DateTime, UTC};
 use std::time::Duration;
+use sdl2_image::{INIT_PNG, INIT_JPG};
 
 const MS_PER_UPDATE: i64 = 15;
 
@@ -24,16 +26,18 @@ fn main() {
     let mut lag = 0;
     let mut last_tick: DateTime<UTC> = UTC::now();
 
+    let _image_context = sdl2_image::init(INIT_PNG | INIT_JPG).unwrap();
+
     // Create a window
     let window  = match video_ctx.window("Mageon", common::DEF_WINDOW_WIDTH, common::DEF_WINDOW_HEIGHT).position_centered().opengl().build() {
         Ok(window) => window,
-        Err(err)   => panic!("failed to create window: {}", err)
+        Err(err)   => panic!("failed to create window: {:?}", err)
     };
 
     // Create a rendering context
     let renderer = match window.renderer().build() {
         Ok(renderer) => renderer,
-        Err(err) => panic!("failed to create renderer: {}", err)
+        Err(err) => panic!("failed to create renderer: {:?}", err)
     };
 
     let mut events = ctx.event_pump().unwrap();

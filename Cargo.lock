@@ -1,11 +1,12 @@
 [root]
-name = "Mageon"
+name = "mageon"
 version = "0.1.0"
 dependencies = [
  "chrono 0.2.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "dungeon-generator 0.1.0 (git+https://github.com/Vinatorul/dungeon-generator-rs.git)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
- "sdl2 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2_image 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tile_engine 0.1.0 (git+https://github.com/Vinatorul/tileengine-rs)",
 ]
 
@@ -41,6 +42,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_static"
+version = "0.1.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "libc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -69,23 +75,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "sdl2"
-version = "0.12.1"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
- "sdl2-sys 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2-sys 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "sdl2-sys"
-version = "0.7.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "sdl2_image"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "bitflags 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sdl2-sys 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

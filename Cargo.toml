@@ -1,11 +1,12 @@
 [package]
-name = "Mageon"
+name = "mageon"
 version = "0.1.0"
 authors = ["Alexander <alexander@kuvaev.me>"]
 
 [dependencies]
-sdl2 = "^0.12"
+sdl2 = "^0.15"
 rand = "^0.3"
 tile_engine = {git = "https://github.com/Vinatorul/tileengine-rs"}
 dungeon-generator = {git = "https://github.com/Vinatorul/dungeon-generator-rs.git"}
 chrono = "^0.2"
+sdl2_image = "^1"

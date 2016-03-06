@@ -12,7 +12,7 @@ impl Unit {
     }
 
     pub fn global_pos(&self) -> (i32, i32) {
-        (self.tile.0*(TILE_SIZE*TILE_SCALE) as i32,
-         self.tile.1*(TILE_SIZE*TILE_SCALE) as i32)
+        (self.tile.0*(TILE_SIZE) as i32,
+         self.tile.1*(TILE_SIZE) as i32)
     }
 }
