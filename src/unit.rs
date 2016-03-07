@@ -1,14 +1,17 @@
 use common::*;
 use game::Game;
+use ai::{AI, MeleeAI};
 
 pub struct Unit {
     pub tile: (i32, i32),
+    pub ai: Box<AI>,
 }
 
 impl Unit {
     pub fn new(tile: (i32, i32)) -> Unit {
         Unit {
             tile: tile,
+            ai: Box::new(MeleeAI),
         }
     }
 

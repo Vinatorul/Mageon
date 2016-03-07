@@ -9,6 +9,7 @@ mod visualizer;
 mod game;
 mod unit;
 mod common;
+mod ai;
 
 use sdl2::event::Event;
 use visualizer::Visualizer;

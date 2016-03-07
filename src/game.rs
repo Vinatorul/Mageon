@@ -116,9 +116,8 @@ impl Game {
         self.player.make_move(delta);
         // AI Works here
         for i in 0..self.enemies.len() {
-            if self.enemies[i].check_move(delta, &self) {
-                self.enemies[i].make_move(delta);
-            }
+            let mv = self.enemies[i].ai.get_move(&self.enemies[i], &self);
+            self.enemies[i].make_move(mv);
         }
     }
 }
