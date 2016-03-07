@@ -1,7 +1,7 @@
 use sdl2::render::{Renderer, Texture};
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
-use game::{Game, TileType};
+use game::Game;
 use common::*;
 use sdl2_image::LoadTexture;
 use std::path::Path;
@@ -76,6 +76,17 @@ impl<'a> Visualizer<'a> {
                                      TILE_SIZE,
                                      TILE_SIZE);
         self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
+        for unit in game.enemies.iter() {
+            let rect = Rect::new(unit.tile.0*TILE_SIZE as i32 - x_offset,
+                                 unit.tile.1*TILE_SIZE as i32 - y_offset,
+                                 TILE_SIZE,
+                                 TILE_SIZE);
+            let texture_rect = Rect::new((TILE_SIZE*0) as i32,
+                                         ENEMY_TEXTURE_Y as i32,
+                                         TILE_SIZE,
+                                         TILE_SIZE);
+            self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
+        }
         let _ = self.renderer.present();
     }
 }

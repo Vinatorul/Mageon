@@ -1,7 +1,7 @@
 use tile_engine::TileEngine;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use dungeon_generator::{BSPGenerator, Room, DungeonGenerator, RoomType};
+use dungeon_generator::{BSPGenerator, Room, DungeonGenerator};
 use std::collections::HashSet;
 use unit::Unit;
 use common::*;
@@ -12,22 +12,10 @@ const TEMP_HEIGHT: u32 = 600;
 const TILE_SCALE: u32 = 4;
 const TEMP_TILE_SIZE: u32 = TILE_SIZE/TILE_SCALE;
 
-#[derive(Debug)]
-pub enum TileType {
-    None,
-    Wall(u32),
-    Floor(u32),
-}
-
-impl Default for TileType {
-    fn default() -> TileType {
-        TileType::None
-    }
-}
-
 pub struct Game {
     pub tiles: TileEngine<TileType>,
     pub player: Unit,
+    pub enemies: Vec<Unit>,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
 }
@@ -37,6 +25,7 @@ impl Game {
         Game {
             tiles: TileEngine::<TileType>::default(),
             player: Unit::new((0, 0)),
+            enemies: vec![],
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
         }
@@ -62,25 +51,17 @@ impl Game {
         }
         self.pressed_keys.insert(key);
         match key {
-            Keycode::Up => {
-                if self.check_player_move((0, -1)) {
-                    self.player.tile.1 -= 1;
-                }
+            Keycode::Up | Keycode::J => {
+                self.make_move((0, -1));
             },
-            Keycode::Down => {
-                if self.check_player_move((0, 1)) {
-                    self.player.tile.1 += 1;
-                }
+            Keycode::Down | Keycode::K => {
+                self.make_move((0, 1));
             },
-            Keycode::Left => {
-                if self.check_player_move((-1, 0)) {
-                    self.player.tile.0 -= 1;
-                }
+            Keycode::Left | Keycode::H => {
+                self.make_move((-1, 0));
             },
-            Keycode::Right => {
-                if self.check_player_move((1, 0)) {
-                    self.player.tile.0 += 1;
-                }
+            Keycode::Right | Keycode::L => {
+                self.make_move((1, 0));
             },
             _ => return,
         }
@@ -98,6 +79,8 @@ impl Game {
         self.player.tile = ((rng.gen_range(players_start_room.x, players_start_room.x + players_start_room.width)/TEMP_TILE_SIZE) as i32,
                             (rng.gen_range(players_start_room.y, players_start_room.y + players_start_room.height)/TEMP_TILE_SIZE) as i32);
         for room in self.rooms.iter() {
+            self.enemies.push(Unit::new(((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
+                            (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32)));
             let mut x = (room.x/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
             while x < room.x + room.width {
                 let mut y = (room.y/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
@@ -125,15 +108,17 @@ impl Game {
         }
     }
 
-    fn check_player_move(&self, delta: (i32, i32)) -> bool {
-        let (pos_x, pos_y) = self.player.global_pos();
-        let tiles = self.tiles.get_tiles((pos_x - (TILE_SIZE) as i32) as f64,
-                                         (pos_y - (TILE_SIZE) as i32) as f64,
-                                         (TILE_SIZE*3) as i32,
-                                         (TILE_SIZE*3) as i32,
-                                         2);
-        let new_pos = (pos_x + delta.0*(TILE_SIZE) as i32,
-                       pos_y + delta.1*(TILE_SIZE) as i32);
-        tiles.contains_key(&new_pos)
+
+    fn make_move(&mut self, delta: (i32, i32)) {
+        if !self.player.check_move(delta, &self) {
+            return
+        }
+        self.player.make_move(delta);
+        // AI Works here
+        for i in 0..self.enemies.len() {
+            if self.enemies[i].check_move(delta, &self) {
+                self.enemies[i].make_move(delta);
+            }
+        }
     }
 }
