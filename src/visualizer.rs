@@ -66,7 +66,7 @@ impl<'a> Visualizer<'a> {
                                      TILE_SIZE,
                                      TILE_SIZE);
         self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
-        for unit in game.enemies.iter() {
+        for unit in game.enemies.values() {
             let rect = Rect::new(unit.tile.0*TILE_SIZE as i32 - x_offset,
                                  unit.tile.1*TILE_SIZE as i32 - y_offset,
                                  TILE_SIZE,

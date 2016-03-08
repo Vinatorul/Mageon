@@ -1,5 +1,3 @@
-use common::*;
-use game::Game;
 use ai::{AI, MeleeAI};
 
 pub struct Unit {

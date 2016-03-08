@@ -2,7 +2,7 @@ use tile_engine::TileEngine;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use dungeon_generator::{BSPGenerator, Room, DungeonGenerator};
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use unit::Unit;
 use common::*;
 use rand::{SeedableRng, StdRng, Rng};
@@ -15,7 +15,7 @@ const TEMP_TILE_SIZE: u32 = TILE_SIZE/TILE_SCALE;
 pub struct Game {
     pub tiles: TileEngine<TileType>,
     pub player: Unit,
-    pub enemies: Vec<Unit>,
+    pub enemies: HashMap<(i32, i32), Unit>,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
 }
@@ -25,7 +25,7 @@ impl Game {
         Game {
             tiles: TileEngine::<TileType>::default(),
             player: Unit::new((0, 0)),
-            enemies: vec![],
+            enemies: HashMap::<(i32, i32), Unit>::new(),
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
         }
@@ -79,8 +79,9 @@ impl Game {
         self.player.tile = ((rng.gen_range(players_start_room.x, players_start_room.x + players_start_room.width)/TEMP_TILE_SIZE) as i32,
                             (rng.gen_range(players_start_room.y, players_start_room.y + players_start_room.height)/TEMP_TILE_SIZE) as i32);
         for room in self.rooms.iter() {
-            self.enemies.push(Unit::new(((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
-                            (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32)));
+            let unit_pos = ((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
+                           (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32);
+            self.enemies.insert(unit_pos, Unit::new(unit_pos));
             let mut x = (room.x/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
             while x < room.x + room.width {
                 let mut y = (room.y/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
@@ -110,9 +111,9 @@ impl Game {
         }
         self.player.make_move(delta);
         // AI Works here
-        for i in 0..self.enemies.len() {
-            let mv = self.enemies[i].ai.get_move(&self.enemies[i], &self);
-            self.enemies[i].make_move(mv);
+        for key in self.enemies.keys().map(|key| *key).collect::<Vec<_>>().iter() {
+            let mv = self.enemies[key].ai.get_move(&self.enemies[key], &self);
+            self.enemies.get_mut(key).unwrap().make_move(mv);
         }
     }
 }
