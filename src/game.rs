@@ -96,16 +96,6 @@ impl Game {
                 x += TEMP_TILE_SIZE;
             }
         }
-        for i in 0..(DEF_WINDOW_WIDTH/TILE_SIZE + 1) {
-            for j in 0..(DEF_WINDOW_HEIGHT/TILE_SIZE + 1) {
-                self.tiles.add_tile((TILE_SIZE*i) as i32,
-                                    (TILE_SIZE*j) as i32,
-                                    TILE_SIZE,
-                                    TILE_SIZE,
-                                    WALL_LAYER_IND,
-                                    TileType::Wall(0));
-            }
-        }
     }
 
     fn make_move(&mut self, delta: (i32, i32)) {
