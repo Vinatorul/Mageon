@@ -108,7 +108,6 @@ impl Game {
         }
     }
 
-
     fn make_move(&mut self, delta: (i32, i32)) {
         if !self.player.check_move(delta, &self) {
             return

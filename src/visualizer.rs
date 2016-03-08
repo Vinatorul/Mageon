@@ -22,8 +22,18 @@ impl<'a> Visualizer<'a> {
     pub fn draw(&mut self, game: &Game, lag: f64) {
         let _ = self.renderer.set_draw_color(Color::RGB(0, 0, 0));
         let _ = self.renderer.clear();
-
+        // get floor and check visible tiles
+        let (mut x_offset, mut y_offset) = global_pos(game.player.tile);
+        x_offset -= (DEF_WINDOW_WIDTH as i32)/2;
+        y_offset -= (DEF_WINDOW_HEIGHT as i32)/2;
+        let tiles = game.tiles.get_tiles(x_offset as f64 - (TILE_SIZE) as f64,
+                                         y_offset as f64 - (TILE_SIZE) as f64,
+                                         (DEF_WINDOW_WIDTH + 2*TILE_SIZE) as i32,
+                                         (DEF_WINDOW_HEIGHT + 2*TILE_SIZE) as i32,
+                                         FLOOR_LAYER_IND);
+        let visible = get_fov(&tiles, game.player.tile);
         // wall
+        //println!("{:?}", tiles.len());
         for tile in game.tiles.get_tiles((TILE_SIZE) as f64,
                                          (TILE_SIZE) as f64,
                                          (DEF_WINDOW_WIDTH + 2*TILE_SIZE) as i32,
@@ -31,6 +41,9 @@ impl<'a> Visualizer<'a> {
                                          WALL_LAYER_IND).values()
         {
             let rect = Rect::new(tile.x, tile.y, tile.width, tile.height);
+            if !visible.contains(&(tile.x, tile.y)) {
+                continue;
+            }
             let texture_x = if let TileType::Wall(texture_x) = tile.tile_info {
                 texture_x
             }
@@ -44,17 +57,12 @@ impl<'a> Visualizer<'a> {
             self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
         }
 
-        let (mut x_offset, mut y_offset) = game.player.global_pos();
-        x_offset -= (DEF_WINDOW_WIDTH as i32)/2;
-        y_offset -= (DEF_WINDOW_HEIGHT as i32)/2;
-        // floor
-        for tile in game.tiles.get_tiles(x_offset as f64 - (TILE_SIZE) as f64,
-                                         y_offset as f64 - (TILE_SIZE) as f64,
-                                         (DEF_WINDOW_WIDTH + 2*TILE_SIZE) as i32,
-                                         (DEF_WINDOW_HEIGHT + 2*TILE_SIZE) as i32,
-                                         FLOOR_LAYER_IND).values()
-        {
+        // draw floor
+        for tile in tiles.values() {
             let rect = Rect::new(tile.x - x_offset, tile.y - y_offset, tile.width, tile.height);
+            if !visible.contains(&(tile.x, tile.y)) {
+                continue;
+            }
             let texture_x = if let TileType::Floor(texture_x) = tile.tile_info {
                 texture_x
             }

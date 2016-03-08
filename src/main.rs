@@ -63,6 +63,6 @@ fn main() {
         }
         // println!("{}", 1000.0/(ms as f64));
         visualizer.draw(&game, (lag as f64)/(MS_PER_UPDATE as f64));
-        std::thread::sleep(Duration::from_millis(50));
+        std::thread::sleep(Duration::from_millis(100));
     }
 }
