@@ -98,8 +98,14 @@ impl Game {
         }
     }
 
+    fn is_empty(&self, pos: (i32, i32)) -> bool {
+        let (pos_x, pos_y) = global_pos(pos);
+        self.tiles.tile_at(pos_x, pos_y, FLOOR_LAYER_IND).is_none()
+    }
+
     fn make_move(&mut self, delta: (i32, i32)) {
-        if !self.player.check_move(delta, &self) {
+        if self.is_empty((self.player.tile.0 + delta.0,
+                          self.player.tile.1 + delta.1)) {
             return
         }
         self.player.make_move(delta);
