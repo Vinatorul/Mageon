@@ -42,56 +42,67 @@ pub fn get_fov(tiles: &::std::collections::HashMap<(i32, i32), &::tile_engine::T
     }
 
     let mut lighted = HashSet::<(i32, i32)>::new();
+    let mut queued = HashSet::<(i32, i32)>::new();
     let mut queue = VecDeque::<(i32, i32, FovType)>::new();
+    let mut push_queue = |q: &mut VecDeque<(i32, i32, FovType)>,
+                          pos: (i32, i32, FovType),
+                          queued: &mut HashSet<(i32, i32)> | {
+        if queued.contains(&(pos.0, pos.1)) {
+            return;
+        }
+        queued.insert((pos.0, pos.1));
+        q.push_back(pos);
+    };
     lighted.insert(global_pos(start_pos));
     let mut shadows = Vec::<(f64, f64)>::new();
-    queue.push_back((start_pos.0 + 1, start_pos.1, FovType::EastAxis));
-    queue.push_back((start_pos.0, start_pos.1 - 1, FovType::NorthAxis));
-    queue.push_back((start_pos.0 - 1, start_pos.1, FovType::WestAxis));
-    queue.push_back((start_pos.0, start_pos.1 + 1, FovType::SouthAxis));
+    push_queue(&mut queue, (start_pos.0 + 1, start_pos.1, FovType::EastAxis), &mut queued);
+    push_queue(&mut queue, (start_pos.0, start_pos.1 - 1, FovType::NorthAxis), &mut queued);
+    push_queue(&mut queue, (start_pos.0 - 1, start_pos.1, FovType::WestAxis), &mut queued);
+    push_queue(&mut queue, (start_pos.0, start_pos.1 + 1, FovType::SouthAxis), &mut queued);
     while !queue.is_empty() {
         let mut pos = queue.pop_front().unwrap();
         if !tiles.contains_key(&global_pos((pos.0, pos.1))) {
             // TODO: count shadow
+            continue;
         }
         // TODO: check shadow
         lighted.insert(global_pos((pos.0, pos.1)));
         match pos.2 {
             FovType::EastAxis => {
-                queue.push_back((pos.0, pos.1 + 1, FovType::SouthEastQuadrant));
-                queue.push_back((pos.0 + 1, pos.1, FovType::EastAxis));
-                queue.push_back((pos.0, pos.1 - 1, FovType::NorthEastQuadrant));
+                push_queue(&mut queue, (pos.0, pos.1 + 1, FovType::SouthEastQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0 + 1, pos.1, FovType::EastAxis), &mut queued);
+                push_queue(&mut queue, (pos.0, pos.1 - 1, FovType::NorthEastQuadrant), &mut queued);
             },
             FovType::NorthEastQuadrant => {
-                queue.push_back((pos.0 + 1, pos.1, FovType::NorthEastQuadrant));
-                queue.push_back((pos.0, pos.1 - 1, FovType::NorthEastQuadrant));
+                push_queue(&mut queue, (pos.0 + 1, pos.1, FovType::NorthEastQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0, pos.1 - 1, FovType::NorthEastQuadrant), &mut queued);
             },
             FovType::NorthAxis => {
-                queue.push_back((pos.0 + 1, pos.1, FovType::NorthEastQuadrant));
-                queue.push_back((pos.0, pos.1 - 1, FovType::NorthAxis));
-                queue.push_back((pos.0 - 1, pos.1, FovType::NorthWestQuadrant));
+                push_queue(&mut queue, (pos.0 + 1, pos.1, FovType::NorthEastQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0, pos.1 - 1, FovType::NorthAxis), &mut queued);
+                push_queue(&mut queue, (pos.0 - 1, pos.1, FovType::NorthWestQuadrant), &mut queued);
             },
             FovType::NorthWestQuadrant => {
-                queue.push_back((pos.0, pos.1 - 1, FovType::NorthWestQuadrant));
-                queue.push_back((pos.0 - 1, pos.1, FovType::NorthWestQuadrant));
+                push_queue(&mut queue, (pos.0, pos.1 - 1, FovType::NorthWestQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0 - 1, pos.1, FovType::NorthWestQuadrant), &mut queued);
             },
             FovType::WestAxis => {
-                queue.push_back((pos.0, pos.1 - 1, FovType::NorthWestQuadrant));
-                queue.push_back((pos.0 - 1, pos.1, FovType::WestAxis));
-                queue.push_back((pos.0, pos.1 + 1, FovType::SouthWestQuadrant));
+                push_queue(&mut queue, (pos.0, pos.1 - 1, FovType::NorthWestQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0 - 1, pos.1, FovType::WestAxis), &mut queued);
+                push_queue(&mut queue, (pos.0, pos.1 + 1, FovType::SouthWestQuadrant), &mut queued);
             },
             FovType::SouthWestQuadrant => {
-                queue.push_back((pos.0 - 1, pos.1, FovType::SouthWestQuadrant));
-                queue.push_back((pos.0, pos.1 + 1, FovType::SouthWestQuadrant));
+                push_queue(&mut queue, (pos.0 - 1, pos.1, FovType::SouthWestQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0, pos.1 + 1, FovType::SouthWestQuadrant), &mut queued);
             },
             FovType::SouthAxis => {
-                queue.push_back((pos.0 - 1, pos.1, FovType::SouthWestQuadrant));
-                queue.push_back((pos.0, pos.1 + 1, FovType::SouthAxis));
-                queue.push_back((pos.0 + 1, pos.1, FovType::SouthEastQuadrant));
+                push_queue(&mut queue, (pos.0 - 1, pos.1, FovType::SouthWestQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0, pos.1 + 1, FovType::SouthAxis), &mut queued);
+                push_queue(&mut queue, (pos.0 + 1, pos.1, FovType::SouthEastQuadrant), &mut queued);
             }
             FovType::SouthEastQuadrant => {
-                queue.push_back((pos.0, pos.1 + 1, FovType::SouthEastQuadrant));
-                queue.push_back((pos.0 + 1, pos.1, FovType::SouthEastQuadrant));
+                push_queue(&mut queue, (pos.0, pos.1 + 1, FovType::SouthEastQuadrant), &mut queued);
+                push_queue(&mut queue, (pos.0 + 1, pos.1, FovType::SouthEastQuadrant), &mut queued);
             },
         }
     }
