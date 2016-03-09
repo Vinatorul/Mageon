@@ -63,6 +63,9 @@ impl Game {
             Keycode::Right | Keycode::L => {
                 self.make_move((1, 0));
             },
+            Keycode::Space => {
+                self.make_move((0, 0));
+            },
             _ => return,
         }
 
