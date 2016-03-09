@@ -91,7 +91,7 @@ impl Game {
                                         TILE_SIZE,
                                         TILE_SIZE,
                                         FLOOR_LAYER_IND,
-                                        TileType::Floor(0));
+                                        TileType::Floor(rng.gen_range(0, 4)));
                     y += TEMP_TILE_SIZE;
                 }
                 x += TEMP_TILE_SIZE;
