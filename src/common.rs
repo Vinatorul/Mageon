@@ -7,6 +7,7 @@ pub const FLOOR_LAYER_IND: i32 = 2;
 pub const PLAYER_TEXTURE_Y: u32 = 0;
 pub const FLOOR_TEXTURE_Y: u32 = PLAYER_TEXTURE_Y + TILE_SIZE;
 pub const ENEMY_TEXTURE_Y: u32 = FLOOR_TEXTURE_Y + TILE_SIZE;
+pub const LIGHT_TEXTURE_Y: u32 = ENEMY_TEXTURE_Y + TILE_SIZE;
 
 #[derive(Debug)]
 pub enum TileType {

@@ -57,6 +57,15 @@ impl<'a> Visualizer<'a> {
                                          TILE_SIZE);
             self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
         }
+        let rect = Rect::new((DEF_WINDOW_WIDTH as i32)/2 - 10,
+                             (DEF_WINDOW_HEIGHT as i32)/2 - 10,
+                             TILE_SIZE + 20,
+                             TILE_SIZE + 20);
+        let texture_rect = Rect::new((TILE_SIZE*0) as i32,
+                                     LIGHT_TEXTURE_Y as i32,
+                                     TILE_SIZE,
+                                     TILE_SIZE);
+        self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
         let rect = Rect::new((DEF_WINDOW_WIDTH as i32)/2,
                              (DEF_WINDOW_HEIGHT as i32)/2,
                              TILE_SIZE,
@@ -67,6 +76,15 @@ impl<'a> Visualizer<'a> {
                                      TILE_SIZE);
         self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
         for unit in game.enemies.iter() {
+            let rect = Rect::new(unit.tile.0*TILE_SIZE as i32 - x_offset - 10,
+                                 unit.tile.1*TILE_SIZE as i32 - y_offset - 10,
+                                 TILE_SIZE + 20,
+                                 TILE_SIZE + 20);
+            let texture_rect = Rect::new((TILE_SIZE*0) as i32,
+                                         LIGHT_TEXTURE_Y as i32,
+                                         TILE_SIZE,
+                                         TILE_SIZE);
+            self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
             let rect = Rect::new(unit.tile.0*TILE_SIZE as i32 - x_offset,
                                  unit.tile.1*TILE_SIZE as i32 - y_offset,
                                  TILE_SIZE,
