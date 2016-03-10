@@ -26,6 +26,10 @@ pub fn global_pos(tile: (i32, i32)) -> (i32, i32) {
      tile.1*(TILE_SIZE) as i32)
 }
 
+pub fn index(i: i32, j: i32) -> usize {
+    (j*(DEF_WINDOW_WIDTH/TILE_SIZE) as i32 + i) as usize
+}
+
 //pub fn get_fov(tiles: &::std::collections::HashMap<(i32, i32), &::tile_engine::Tile<TileType>>, start_pos: (i32, i32)) -> ::std::collections::HashSet<(i32, i32)> {
     //use std::collections::{HashSet, VecDeque};
     //enum FovType {
