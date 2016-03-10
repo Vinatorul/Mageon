@@ -16,6 +16,7 @@ pub struct Game {
     pub tiles: TileEngine<TileType>,
     pub player: Unit,
     pub enemies: Vec<Unit>,
+    block_input: bool,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
 }
@@ -26,13 +27,26 @@ impl Game {
             tiles: TileEngine::<TileType>::default(),
             player: Unit::new((0, 0)),
             enemies: vec![],
+            block_input: false,
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
         }
     }
 
     pub fn update(&mut self) {
-
+        if self.block_input {
+            let mut block_input = self.player.is_moving();
+            if block_input {
+                self.player.update();
+            }
+            else {
+                for unit in self.enemies.iter_mut() {
+                    unit.update();
+                    block_input = block_input || unit.is_moving();
+                }
+            }
+            self.block_input = block_input;
+        }
     }
 
     pub fn proc_event(&mut self, event: Event) {
@@ -46,7 +60,7 @@ impl Game {
     }
 
     fn proc_key_down(&mut self, key: Keycode) {
-        if self.pressed_keys.contains(&key) {
+        if self.block_input || self.pressed_keys.contains(&key) {
             return;
         }
         self.pressed_keys.insert(key);
@@ -117,8 +131,9 @@ impl Game {
     fn make_move(&mut self, delta: (i32, i32)) {
         if self.is_empty((self.player.tile.0 + delta.0,
                           self.player.tile.1 + delta.1)) {
-            return
-        }
+                              return
+                          }
+        self.block_input = true;
         self.player.make_move(delta);
         // AI Works here
         for i in 0..self.enemies.len() {

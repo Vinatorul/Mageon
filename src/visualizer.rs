@@ -25,7 +25,7 @@ impl<'a> Visualizer<'a> {
         let _ = self.renderer.set_draw_color(Color::RGB(0, 0, 0));
         let _ = self.renderer.clear();
 
-        let (mut x_offset, mut y_offset) = global_pos(game.player.tile);
+        let (mut x_offset, mut y_offset) = game.player.global_pos();
         x_offset -= (DEF_WINDOW_WIDTH as i32)/2;
         y_offset -= (DEF_WINDOW_HEIGHT as i32)/2;
         let tiles = game.tiles.get_tiles(x_offset as f64 - (TILE_SIZE) as f64,
@@ -76,8 +76,9 @@ impl<'a> Visualizer<'a> {
                                      TILE_SIZE);
         self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
         for unit in game.enemies.iter() {
-            let rect = Rect::new(unit.tile.0*TILE_SIZE as i32 - x_offset - 10,
-                                 unit.tile.1*TILE_SIZE as i32 - y_offset - 10,
+            let unit_pos = unit.global_pos();
+            let rect = Rect::new(unit_pos.0 - x_offset - 10,
+                                 unit_pos.1 - y_offset - 10,
                                  TILE_SIZE + 20,
                                  TILE_SIZE + 20);
             let texture_rect = Rect::new((TILE_SIZE*0) as i32,
@@ -85,8 +86,8 @@ impl<'a> Visualizer<'a> {
                                          TILE_SIZE,
                                          TILE_SIZE);
             self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
-            let rect = Rect::new(unit.tile.0*TILE_SIZE as i32 - x_offset,
-                                 unit.tile.1*TILE_SIZE as i32 - y_offset,
+            let rect = Rect::new(unit_pos.0 - x_offset,
+                                 unit_pos.1 - y_offset,
                                  TILE_SIZE,
                                  TILE_SIZE);
             let texture_rect = Rect::new((TILE_SIZE*0) as i32,
