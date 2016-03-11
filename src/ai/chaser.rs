@@ -63,24 +63,43 @@ impl AI for ChaserAI {
 impl ChaserAI {
     fn find_path(table: &mut Vec<i32>, player_pos: (i32, i32), width: i32, height: i32) {
         let mut queue = VecDeque::<(i32, i32)>::new();
+        let iterate = |queue: &mut VecDeque<(i32, i32)>,
+                       pos: &(i32, i32),
+                       delta: (i32, i32),
+                       table: &mut Vec<i32>|
+        {
+            if table[index(pos.0 + delta.0, pos.1 + delta.1)] != 1 {
+                return;
+            }
+            table[index(pos.0 + delta.0, pos.1 + delta.1)] = table[index(pos.0, pos.1)] - 50;
+            queue.push_back((pos.0 + delta.0, pos.1 + delta.1));
+        };
         queue.push_back(player_pos);
         while !queue.is_empty() {
             let pos = queue.pop_front().unwrap();
-            if (pos.0 > 0) && (table[index(pos.0 - 1, pos.1)] == 1) {
-                table[index(pos.0 - 1, pos.1)] = table[index(pos.0, pos.1)] - 50;
-                queue.push_back((pos.0 - 1, pos.1));
+            if pos.0 > 0 {
+                if pos.1 > 0 {
+                    iterate(&mut queue, &pos, (-1, -1), table);
+                }
+                iterate(&mut queue, &pos, (-1, 0), table);
             }
-            if (pos.0 < width - 1) && (table[index(pos.0 + 1, pos.1)] == 1) {
-                table[index(pos.0 + 1, pos.1)] = table[index(pos.0, pos.1)] - 50;
-                queue.push_back((pos.0 + 1, pos.1));
+            if pos.1 > 0 {
+                if pos.0 < width - 1 {
+                    iterate(&mut queue, &pos, (1, -1), table);
+                }
+                iterate(&mut queue, &pos, (0, -1), table);
             }
-            if (pos.1 > 0) && (table[index(pos.0, pos.1 - 1)] == 1) {
-                table[index(pos.0, pos.1 - 1)] = table[index(pos.0, pos.1)] - 50;
-                queue.push_back((pos.0, pos.1 - 1));
+            if pos.0 < width - 1 {
+                if pos.1 < height - 1 {
+                    iterate(&mut queue, &pos, (1, 1), table);
+                }
+                iterate(&mut queue, &pos, (1, 0), table);
             }
-            if (pos.1 < height - 1) && (table[index(pos.0, pos.1 + 1)] == 1) {
-                table[index(pos.0, pos.1 + 1)] = table[index(pos.0, pos.1)] - 50;
-                queue.push_back((pos.0, pos.1 + 1));
+            if pos.1 < height - 1 {
+                if pos.0 > 0 {
+                    iterate(&mut queue, &pos, (-1, 1), table);
+                }
+                iterate(&mut queue, &pos, (0, 1), table);
             }
         }
     }
@@ -88,25 +107,22 @@ impl ChaserAI {
     fn get_move_tabled(table: &Vec<i32>, self_pos: (i32, i32)) -> (i32, i32) {
         let mut current_value = table[index(self_pos.0, self_pos.1)];
         let mut mv = (0, 0);
-        let temp_value = table[index(self_pos.0 - 1, self_pos.1)];
-        if temp_value > current_value {
-            mv = (-1, 0);
-            current_value = temp_value;
-        }
-        let temp_value = table[index(self_pos.0 + 1, self_pos.1)];
-        if temp_value > current_value {
-            mv = (1, 0);
-            current_value = temp_value;
-        }
-        let temp_value = table[index(self_pos.0, self_pos.1 - 1)];
-        if temp_value > current_value {
-            mv = (0, -1);
-            current_value = temp_value;
-        }
-        let temp_value = table[index(self_pos.0, self_pos.1 + 1)];
-        if temp_value > current_value {
-            mv = (0, 1);
-            current_value = temp_value;
+        {
+            let mut check_pos = |delta: (i32, i32)| {
+                let temp_value = table[index(self_pos.0 + delta.0, self_pos.1 + delta.1)];
+                if temp_value > current_value {
+                    mv = delta;
+                    current_value = temp_value;
+                }
+            };
+            check_pos((0, -1));
+            check_pos((1, 0));
+            check_pos((0, 1));
+            check_pos((-1, 0));
+            check_pos((-1, -1));
+            check_pos((1, -1));
+            check_pos((1, 1));
+            check_pos((-1, 1));
         }
         mv
     }

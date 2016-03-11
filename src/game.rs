@@ -65,22 +65,34 @@ impl Game {
         }
         self.pressed_keys.insert(key);
         match key {
-            Keycode::Up | Keycode::J => {
+            Keycode::Up | Keycode::J | Keycode::Kp8 => {
                 self.make_move((0, -1));
             },
-            Keycode::Down | Keycode::K => {
+            Keycode::Down | Keycode::K | Keycode::Kp2 => {
                 self.make_move((0, 1));
             },
-            Keycode::Left | Keycode::H => {
+            Keycode::Left | Keycode::H | Keycode::Kp4 => {
                 self.make_move((-1, 0));
             },
-            Keycode::Right | Keycode::L => {
+            Keycode::Right | Keycode::L | Keycode::Kp6 => {
                 self.make_move((1, 0));
             },
-            Keycode::Space => {
+            Keycode::Space | Keycode::Period | Keycode::Kp5 => {
                 self.make_move((0, 0));
-            },
-            _ => return,
+            }
+            Keycode::Y | Keycode::Kp7 => {
+                self.make_move((-1, -1));
+            }
+            Keycode::U | Keycode::Kp9 => {
+                self.make_move((1, -1));
+            }
+            Keycode::B | Keycode::Kp1 => {
+                self.make_move((-1, 1));
+            }
+            Keycode::N | Keycode::Kp3 => {
+                self.make_move((1, 1));
+            }
+            _ => println!("{:?}", key),
         }
 
     }
