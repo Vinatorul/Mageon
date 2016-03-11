@@ -49,12 +49,10 @@ impl AI for ChaserAI {
         if current_value == 1 {
             // no path
             ChaserAI::find_path(&mut table_2, player_pos, width, height);
-            table_2[index(player_pos.0, player_pos.1)] = -100;
             ChaserAI::mark_allies(&mut table_2, &game.enemies, unit, start, width, height);
             ChaserAI::get_move_tabled(&table_2, self_pos)
         }
         else {
-            table[index(player_pos.0, player_pos.1)] = -100;
             ChaserAI::get_move_tabled(&table, self_pos)
         }
     }

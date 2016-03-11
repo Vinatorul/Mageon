@@ -3,7 +3,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use dungeon_generator::{BSPGenerator, Room, DungeonGenerator};
 use std::collections::HashSet;
-use unit::Unit;
+use unit::{self, Unit};
 use common::*;
 use rand::{SeedableRng, StdRng, Rng};
 
@@ -19,6 +19,7 @@ pub struct Game {
     block_input: bool,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
+    rand: StdRng,
 }
 
 impl Game {
@@ -30,19 +31,20 @@ impl Game {
             block_input: false,
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
+            rand: StdRng::new().unwrap(),
         }
     }
 
     pub fn update(&mut self) {
         if self.block_input {
-            let mut block_input = self.player.is_moving();
+            let mut block_input = self.player.is_animation_playing();
             if block_input {
                 self.player.update();
             }
             else {
                 for unit in self.enemies.iter_mut() {
                     unit.update();
-                    block_input = block_input || unit.is_moving();
+                    block_input = block_input || unit.is_animation_playing();
                 }
             }
             self.block_input = block_input;
@@ -92,7 +94,7 @@ impl Game {
             Keycode::N | Keycode::Kp3 => {
                 self.make_move((1, 1));
             }
-            _ => println!("{:?}", key),
+            _ => {},
         }
 
     }
@@ -130,27 +132,39 @@ impl Game {
 
     fn is_empty(&self, pos: (i32, i32)) -> bool {
         let (pos_x, pos_y) = global_pos(pos);
+        self.tiles.tile_at(pos_x, pos_y, FLOOR_LAYER_IND).is_none()
+    }
+
+    fn make_move(&mut self, delta: (i32, i32)) {
+        let new_pos = (self.player.tile.0 + delta.0,
+                       self.player.tile.1 + delta.1);
+        if self.is_empty(new_pos) {
+                              return
+                          }
+        self.block_input = true;
         let mut enemy_collide = false;
         for enemy in self.enemies.iter() {
-            if (pos.0 == enemy.tile.0) && (pos.1 == enemy.tile.1) {
+            if (new_pos.0 == enemy.tile.0) && (new_pos.1 == enemy.tile.1) {
                 enemy_collide = true;
                 break;
             }
         }
-        enemy_collide || self.tiles.tile_at(pos_x, pos_y, FLOOR_LAYER_IND).is_none()
-    }
-
-    fn make_move(&mut self, delta: (i32, i32)) {
-        if self.is_empty((self.player.tile.0 + delta.0,
-                          self.player.tile.1 + delta.1)) {
-                              return
-                          }
-        self.block_input = true;
-        self.player.make_move(delta);
+        if enemy_collide {
+            self.player.atack(delta, 0);
+        }
+        else {
+            self.player.make_move(delta, 0);
+        }
         // AI Works here
         for i in 0..self.enemies.len() {
             let mv = self.enemies[i].ai.get_move(&self.enemies[i], &self);
-            self.enemies[i].make_move(mv);
+            let new_pos = (self.enemies[i].tile.0 + mv.0, self.enemies[i].tile.1 + mv.1);
+            if new_pos == self.player.tile {
+                self.enemies[i].atack(mv, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
+            }
+            else {
+                self.enemies[i].make_move(mv, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
+            }
         }
     }
 }

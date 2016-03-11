@@ -1,14 +1,24 @@
 use ai::{AI, ChaserAI};
 use common::*;
 
-const ANIMATION_LENGTH: u32 = 16;
+pub const ANIMATION_LENGTH: u32 = 16;
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum Animation {
+    Idle,
+    Move,
+    Atack,
+}
 
 pub struct Unit {
     pub tile: (i32, i32),
     pub ai: Box<AI>,
     pub hp: i32,
-    move_animation_tick: u32,
-    move_delta: (i32, i32),
+    pub damage: i32,
+    animation: Animation,
+    animation_tick: u32,
+    animation_delay: u32,
+    delta: (i32, i32),
 }
 
 impl Unit {
@@ -16,36 +26,69 @@ impl Unit {
         Unit {
             tile: tile,
             ai: Box::new(ChaserAI),
-            hp: 100,
-            move_animation_tick: 0,
-            move_delta: (0, 0)
+            hp: 10,
+            damage: 5,
+            animation: Animation::Idle,
+            animation_tick: 0,
+            animation_delay: 0,
+            delta: (0, 0)
         }
     }
 
-    pub fn make_move(&mut self, delta: (i32, i32)) {
-        self.move_animation_tick = ANIMATION_LENGTH;
-        self.move_delta = delta;
+    pub fn make_move(&mut self, delta: (i32, i32), delay: u32) {
+        self.animation_tick = ANIMATION_LENGTH;
+        self.delta = delta;
+        self.animation = Animation::Move;
         self.tile.0 += delta.0;
         self.tile.1 += delta.1;
+        self.animation_delay = delay;
+    }
+
+    pub fn atack(&mut self, delta: (i32, i32), delay: u32) {
+        self.animation_tick = ANIMATION_LENGTH;
+        self.delta = delta;
+        self.animation = Animation::Atack;
+        self.animation_delay = delay;
     }
 
     pub fn global_pos(&self) -> (i32, i32) {
-        let coeff = (self.move_animation_tick as f64)/(ANIMATION_LENGTH as f64);
-        (self.tile.0*TILE_SIZE as i32 - ((self.move_delta.0 as f64)*(TILE_SIZE as f64)*coeff) as i32,
-         self.tile.1*TILE_SIZE as i32 - ((self.move_delta.1 as f64)*(TILE_SIZE as f64)*coeff) as i32)
+        let mut result = (self.tile.0*TILE_SIZE as i32, self.tile.1*TILE_SIZE as i32);
+        let coef = match self.animation {
+            Animation::Move => {
+                -(self.animation_tick as f64)/(ANIMATION_LENGTH as f64)
+            },
+            Animation::Atack => {
+                if self.animation_tick > 2*ANIMATION_LENGTH/3 {
+                    -((ANIMATION_LENGTH - self.animation_tick) as f64)/(ANIMATION_LENGTH as f64)
+                }
+                else {
+                    (self.animation_tick as f64)/(ANIMATION_LENGTH as f64)
+                }
+            },
+            Animation::Idle => {
+                0.
+            }
+        };
+        result.0 += ((self.delta.0 as f64)*(TILE_SIZE as f64)*coef) as i32;
+        result.1 += ((self.delta.1 as f64)*(TILE_SIZE as f64)*coef) as i32;
+        result
     }
 
     pub fn update(&mut self) {
-        if self.move_animation_tick > 0 {
-            self.move_animation_tick -= 1;
+        if self.animation_delay > 0 {
+            self.animation_delay -= 1;
+            return;
+        }
+        if self.animation_tick > 0 {
+            self.animation_tick -= 1;
         }
         // skipping last frame
-        if self.move_animation_tick == 1 {
-            self.move_delta = (0, 0);
+        if self.animation_tick == 1 {
+            self.animation = Animation::Idle;
         }
     }
 
-    pub fn is_moving(&self) -> bool {
-        self.move_delta != (0, 0)
+    pub fn is_animation_playing(&self) -> bool {
+        self.animation != Animation::Idle
     }
 }
