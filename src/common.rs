@@ -1,6 +1,9 @@
 pub const TILE_SIZE: u32 = 40;
+pub const BAR_WIDTH: u32 = 160;
+pub const BAR_HEIGHT: u32 = 20;
 pub const DEF_WINDOW_WIDTH: u32 = 800;
 pub const DEF_WINDOW_HEIGHT: u32 = 600;
+pub const PLAYER_MAX_HP: i32 = 50;
 
 pub const FLOOR_LAYER_IND: i32 = 2;
 
@@ -8,6 +11,8 @@ pub const PLAYER_TEXTURE_Y: u32 = 0;
 pub const FLOOR_TEXTURE_Y: u32 = PLAYER_TEXTURE_Y + TILE_SIZE;
 pub const ENEMY_TEXTURE_Y: u32 = FLOOR_TEXTURE_Y + TILE_SIZE;
 pub const LIGHT_TEXTURE_Y: u32 = ENEMY_TEXTURE_Y + TILE_SIZE;
+pub const HP_BAR_Y: u32 = LIGHT_TEXTURE_Y + TILE_SIZE;
+pub const BAR_BORDER_Y: u32 = HP_BAR_Y + BAR_HEIGHT;
 
 #[derive(Debug)]
 pub enum TileType {

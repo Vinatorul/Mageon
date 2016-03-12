@@ -22,12 +22,12 @@ pub struct Unit {
 }
 
 impl Unit {
-    pub fn new(tile: (i32, i32)) -> Unit {
+    pub fn new(tile: (i32, i32), hp: i32, dmg: i32) -> Unit {
         Unit {
             tile: tile,
             ai: Box::new(ChaserAI),
-            hp: 10,
-            damage: 5,
+            hp: hp,
+            damage: dmg,
             animation: Animation::Idle,
             animation_tick: 0,
             animation_delay: 0,
@@ -49,6 +49,10 @@ impl Unit {
         self.delta = delta;
         self.animation = Animation::Atack;
         self.animation_delay = delay;
+    }
+
+    pub fn takes_damage(&mut self, damage: i32) {
+        self.hp -= damage;
     }
 
     pub fn global_pos(&self) -> (i32, i32) {
@@ -90,5 +94,9 @@ impl Unit {
 
     pub fn is_animation_playing(&self) -> bool {
         self.animation != Animation::Idle
+    }
+
+    pub fn alive(&self) -> bool {
+        self.hp > 0
     }
 }

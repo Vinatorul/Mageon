@@ -16,6 +16,7 @@ pub struct Game {
     pub tiles: TileEngine<TileType>,
     pub player: Unit,
     pub enemies: Vec<Unit>,
+    pub dead_enemies: Vec<Unit>,
     block_input: bool,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
@@ -26,8 +27,9 @@ impl Game {
     pub fn new() -> Game {
         Game {
             tiles: TileEngine::<TileType>::default(),
-            player: Unit::new((0, 0)),
+            player: Unit::new((0, 0), PLAYER_MAX_HP, 5),
             enemies: vec![],
+            dead_enemies: vec![],
             block_input: false,
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
@@ -112,7 +114,7 @@ impl Game {
         for room in self.rooms.iter() {
             let unit_pos = ((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
                            (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32);
-            self.enemies.push(Unit::new(unit_pos));
+            self.enemies.push(Unit::new(unit_pos, 5, 5));
             let mut x = (room.x/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
             while x < room.x + room.width {
                 let mut y = (room.y/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
@@ -142,15 +144,21 @@ impl Game {
                               return
                           }
         self.block_input = true;
-        let mut enemy_collide = false;
-        for enemy in self.enemies.iter() {
-            if (new_pos.0 == enemy.tile.0) && (new_pos.1 == enemy.tile.1) {
-                enemy_collide = true;
+        let mut enemy_collide_ind = -1;
+        for i in 0..self.enemies.len() {
+            if (new_pos.0 == self.enemies[i].tile.0) && (new_pos.1 == self.enemies[i].tile.1) {
+                enemy_collide_ind = i as i32;
                 break;
             }
         }
-        if enemy_collide {
+        if enemy_collide_ind >= 0 {
             self.player.atack(delta, 0);
+            if self.rand.gen_range(0, 10) != 3 { // 10% to miss
+                self.enemies[enemy_collide_ind as usize].takes_damage(self.player.damage + self.rand.gen_range(-2, 2));
+                if !self.enemies[enemy_collide_ind as usize].alive() {
+                    self.dead_enemies.push(self.enemies.remove(enemy_collide_ind as usize));
+                }
+            }
         }
         else {
             self.player.make_move(delta, 0);
@@ -161,6 +169,10 @@ impl Game {
             let new_pos = (self.enemies[i].tile.0 + mv.0, self.enemies[i].tile.1 + mv.1);
             if new_pos == self.player.tile {
                 self.enemies[i].atack(mv, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
+                if self.rand.gen_range(0, 10) == 7 { // 10% to miss
+                    continue;
+                }
+                self.player.takes_damage(self.enemies[i].damage + self.rand.gen_range(-2, 2));
             }
             else {
                 self.enemies[i].make_move(mv, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
