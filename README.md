@@ -4,6 +4,22 @@
 [7DRL](http://7drl.org/) 2016 entry
 
 Official start time, 10:00am MSK, 06 March 2016
+Offical end time 03:00am MSK, 13 March 2016
+Total time spent 161 hour.
+Real time spent about 24 hours.
+
+# Gameplay
+
+Your main objective is to find the right portal from many other.
+For every fourth portal you will regain full help.
+Use indicators in left upper corner.
+![](gameplay.gif)
+
+# How to play
+
+Use numpad, vi keys or arrow to move or skip turns.
+Have fun.
+![](gameover.gif)
 
 # Requirements
 
