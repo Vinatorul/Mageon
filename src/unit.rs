@@ -86,7 +86,7 @@ impl Unit {
         if self.animation_tick > 0 {
             self.animation_tick -= 1;
         }
-        // skipping last frame
+        // skipping last frames
         if self.animation_tick == 1 {
             self.animation = Animation::Idle;
         }
@@ -98,5 +98,9 @@ impl Unit {
 
     pub fn alive(&self) -> bool {
         self.hp > 0
+    }
+
+    pub fn stop_animation(&mut self) {
+        self.animation = Animation::Idle
     }
 }

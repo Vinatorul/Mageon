@@ -40,6 +40,14 @@ pub fn index(i: i32, j: i32) -> usize {
     (j*(DEF_WINDOW_WIDTH/TILE_SIZE) as i32 + i) as usize
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Screen {
+    Start,
+    Game,
+    Lost,
+    Win,
+}
+
 //pub fn get_fov(tiles: &::std::collections::HashMap<(i32, i32), &::tile_engine::Tile<TileType>>, start_pos: (i32, i32)) -> ::std::collections::HashSet<(i32, i32)> {
     //use std::collections::{HashSet, VecDeque};
     //enum FovType {

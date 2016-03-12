@@ -6,16 +6,14 @@ use common::*;
 use sdl2_image::LoadTexture;
 use std::path::Path;
 
-pub enum Screen {
-    Start,
-    Game,
-    Death,
-}
 
 pub struct Visualizer<'a> {
     texture: Texture,
     background: Texture,
     foreground: Texture,
+    start_screen: Texture,
+    lost_screen: Texture,
+    win_screen: Texture,
     renderer: Renderer<'a>,
 }
 
@@ -25,14 +23,39 @@ impl<'a> Visualizer<'a> {
             texture: renderer.load_texture(Path::new("./assets/Floor.png")).unwrap(),
             background: renderer.load_texture(Path::new("./assets/background.png")).unwrap(),
             foreground: renderer.load_texture(Path::new("./assets/fog.png")).unwrap(),
+            start_screen: renderer.load_texture(Path::new("./assets/start_screen.png")).unwrap(),
+            lost_screen: renderer.load_texture(Path::new("./assets/lost_screen.png")).unwrap(),
+            win_screen: renderer.load_texture(Path::new("./assets/win_screen.png")).unwrap(),
             renderer: renderer,
         }
     }
 
+
     pub fn draw(&mut self, game: &Game, lag: f64) {
         let _ = self.renderer.set_draw_color(Color::RGB(0, 0, 0));
         let _ = self.renderer.clear();
+        match game.screen {
+            Screen::Start => self.draw_start(),
+            Screen::Game => self.draw_game(game),
+            Screen::Lost => self.draw_lost(),
+            Screen::Win => self.draw_win(),
+        }
+        let _ = self.renderer.present();
+    }
 
+    fn draw_lost(&mut self) {
+        self.renderer.copy(&self.lost_screen, None, None);
+    }
+
+    fn draw_start(&mut self) {
+        self.renderer.copy(&self.start_screen, None, None);
+    }
+
+    fn draw_win(&mut self) {
+        self.renderer.copy(&self.win_screen, None, None);
+    }
+
+    fn draw_game(&mut self, game: &Game) {
         let (mut x_offset, mut y_offset) = game.player.global_pos();
         x_offset -= (DEF_WINDOW_WIDTH as i32)/2;
         y_offset -= (DEF_WINDOW_HEIGHT as i32)/2;
@@ -177,7 +200,5 @@ impl<'a> Visualizer<'a> {
                                          BAR_HEIGHT);
             self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
         }
-        // BORDERS
-        let _ = self.renderer.present();
     }
 }

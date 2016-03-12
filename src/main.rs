@@ -18,8 +18,6 @@ use game::Game;
 use chrono::{DateTime, UTC};
 use std::time::Duration;
 use sdl2_image::{INIT_PNG, INIT_JPG};
-use rand::{StdRng, Rng};
-use std::env::args;
 
 const MS_PER_UPDATE: i64 = 15;
 
@@ -46,21 +44,7 @@ fn main() {
 
     let mut events = ctx.event_pump().unwrap();
     let mut game = Game::new();
-    let mut args = args();
-    let _ = args.next();
-    let rand = if let Some(s) = args.next() {
-        if let Ok(r) = s.parse() {
-            r
-        }
-        else {
-            StdRng::new().unwrap().next_u32() as usize
-        }
-    }
-    else {
-        StdRng::new().unwrap().next_u32() as usize
-    };
-    game.generate_level(&[rand, rand, rand, rand]);
-    println!("Your seed is {}, run ./Mageon {} to play this level again", rand, rand);
+    
     let mut visualizer = Visualizer::new(renderer);
     // loop until we receive a QuitEvent
     'event : loop {

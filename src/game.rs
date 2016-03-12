@@ -7,6 +7,7 @@ use unit::{self, Unit};
 use common::*;
 use rand::{SeedableRng, StdRng, Rng};
 use portal::Portal;
+use std::env::args;
 
 const TEMP_WIDTH: u32 = 800;
 const TEMP_HEIGHT: u32 = 600;
@@ -20,10 +21,12 @@ pub struct Game {
     pub dead_enemies: Vec<Unit>,
     pub portals: Vec<Portal>,
     pub portals_passed: i32,
-    block_input: bool,
+    pub screen: Screen,
+    is_animating: bool,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
     rand: StdRng,
+    winning_portal: usize,
 }
 
 impl Game {
@@ -35,26 +38,28 @@ impl Game {
             dead_enemies: vec![],
             portals: vec![],
             portals_passed: 0,
-            block_input: false,
+            screen: Screen::Start,
+            is_animating: false,
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
             rand: StdRng::new().unwrap(),
+            winning_portal: 0,
         }
     }
 
     pub fn update(&mut self) {
-        if self.block_input {
-            let mut block_input = self.player.is_animation_playing();
-            if block_input {
+        if self.is_animating {
+            let mut is_animating = self.player.is_animation_playing();
+            if is_animating {
                 self.player.update();
             }
             else {
                 for unit in self.enemies.iter_mut() {
                     unit.update();
-                    block_input = block_input || unit.is_animation_playing();
+                    is_animating = is_animating || unit.is_animation_playing();
                 }
             }
-            self.block_input = block_input;
+            self.is_animating = is_animating;
         }
     }
 
@@ -69,7 +74,23 @@ impl Game {
     }
 
     fn proc_key_down(&mut self, key: Keycode) {
-        if self.block_input || self.pressed_keys.contains(&key) {
+        if self.screen != Screen::Game {
+            let mut rand = self.rand.next_u32() as usize;
+            if self.screen == Screen::Start {
+                let mut args = args();
+                let _ = args.next();
+                if let Some(s) = args.next() {
+                    if let Ok(r) = s.parse() {
+                        rand = r;
+                    }
+                }
+            }
+            self.generate_level(&[rand, rand, rand, rand]);
+            println!("Your seed is {}, run ./Mageon {} to play this level again", rand, rand);
+            self.screen = Screen::Game;
+            return;
+        }
+        if self.pressed_keys.contains(&key) {
             return;
         }
         self.pressed_keys.insert(key);
@@ -111,6 +132,12 @@ impl Game {
     }
 
     pub fn generate_level(&mut self, seed: &[usize]) {
+        self.tiles = TileEngine::<TileType>::default();
+        self.enemies.clear();
+        self.dead_enemies.clear();
+        self.portals.clear();
+        self.player.hp = PLAYER_MAX_HP;
+        self.portals_passed = 0;
         let mut rng: StdRng = SeedableRng::from_seed(seed);
         self.rooms = BSPGenerator::default().min_room_splittable_size(100).coridor_width(15).generate(seed, TEMP_WIDTH, TEMP_HEIGHT);
         let players_start_room = &self.rooms[rng.gen_range(0, self.rooms.len())];
@@ -140,6 +167,7 @@ impl Game {
                 x += TEMP_TILE_SIZE;
             }
         }
+        self.winning_portal = rng.gen_range(0, portal_dests.len());
         for i in 0..portal_dests.len() {
             let room = self.rooms[portal_dests[i]];
             let portal_dest = ((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
@@ -154,12 +182,18 @@ impl Game {
     }
 
     fn make_move(&mut self, delta: (i32, i32)) {
+        if self.is_animating {
+            self.player.stop_animation();
+            for unit in self.enemies.iter_mut() {
+                unit.stop_animation();
+            }
+        }
         let new_pos = (self.player.tile.0 + delta.0,
                        self.player.tile.1 + delta.1);
         if self.is_empty(new_pos) {
                               return
                           }
-        self.block_input = true;
+        self.is_animating = true;
         let mut enemy_collide_ind = -1;
         for i in 0..self.enemies.len() {
             if (new_pos.0 == self.enemies[i].tile.0) && (new_pos.1 == self.enemies[i].tile.1) {
@@ -188,6 +222,10 @@ impl Game {
                 self.player.make_move(delta, 0);
             }
             else {
+                if enter_portal_ind == self.winning_portal as i32 {
+                    self.screen = Screen::Win;
+                    return;
+                }
                 let new_delta = (self.portals[enter_portal_ind as usize].destination.0 - self.player.tile.0,
                                  self.portals[enter_portal_ind as usize].destination.1 - self.player.tile.1);
                 self.portals.remove(enter_portal_ind as usize);
@@ -209,6 +247,9 @@ impl Game {
                     continue;
                 }
                 self.player.takes_damage(self.enemies[i].damage + self.rand.gen_range(-2, 2));
+                if !self.player.alive() {
+                    self.screen = Screen::Lost;
+                }
             }
             else {
                 let mut enter_portal_ind = -1;
