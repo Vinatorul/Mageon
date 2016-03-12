@@ -10,6 +10,7 @@ mod game;
 mod unit;
 mod common;
 mod ai;
+mod portal;
 
 use sdl2::event::Event;
 use visualizer::Visualizer;

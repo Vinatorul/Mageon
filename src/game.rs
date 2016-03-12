@@ -6,6 +6,7 @@ use std::collections::HashSet;
 use unit::{self, Unit};
 use common::*;
 use rand::{SeedableRng, StdRng, Rng};
+use portal::Portal;
 
 const TEMP_WIDTH: u32 = 800;
 const TEMP_HEIGHT: u32 = 600;
@@ -17,6 +18,8 @@ pub struct Game {
     pub player: Unit,
     pub enemies: Vec<Unit>,
     pub dead_enemies: Vec<Unit>,
+    pub portals: Vec<Portal>,
+    pub portals_passed: i32,
     block_input: bool,
     rooms: Vec<Room>,
     pressed_keys: HashSet<Keycode>,
@@ -30,6 +33,8 @@ impl Game {
             player: Unit::new((0, 0), PLAYER_MAX_HP, 5),
             enemies: vec![],
             dead_enemies: vec![],
+            portals: vec![],
+            portals_passed: 0,
             block_input: false,
             rooms: vec![],
             pressed_keys: HashSet::<Keycode>::new(),
@@ -111,10 +116,15 @@ impl Game {
         let players_start_room = &self.rooms[rng.gen_range(0, self.rooms.len())];
         self.player.tile = ((rng.gen_range(players_start_room.x, players_start_room.x + players_start_room.width)/TEMP_TILE_SIZE) as i32,
                             (rng.gen_range(players_start_room.y, players_start_room.y + players_start_room.height)/TEMP_TILE_SIZE) as i32);
+        let mut portal_dests = Vec::<usize>::new();
         for room in self.rooms.iter() {
             let unit_pos = ((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
                            (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32);
+            let portal_pos = ((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
+                           (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32);
+            portal_dests.push(rng.gen_range(0, self.rooms.len()));
             self.enemies.push(Unit::new(unit_pos, 5, 5));
+            self.portals.push(Portal::new(portal_pos));
             let mut x = (room.x/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
             while x < room.x + room.width {
                 let mut y = (room.y/TEMP_TILE_SIZE)*TEMP_TILE_SIZE;
@@ -129,6 +139,12 @@ impl Game {
                 }
                 x += TEMP_TILE_SIZE;
             }
+        }
+        for i in 0..portal_dests.len() {
+            let room = self.rooms[portal_dests[i]];
+            let portal_dest = ((rng.gen_range(room.x, room.x + room.width)/TEMP_TILE_SIZE) as i32,
+                               (rng.gen_range(room.y, room.y + room.height)/TEMP_TILE_SIZE) as i32);
+            self.portals[i].connect(portal_dest);
         }
     }
 
@@ -161,7 +177,27 @@ impl Game {
             }
         }
         else {
-            self.player.make_move(delta, 0);
+            let mut enter_portal_ind = -1;
+            for i in 0..self.portals.len() {
+                if (new_pos.0 == self.portals[i].tile.0) && (new_pos.1 == self.portals[i].tile.1) {
+                    enter_portal_ind = i as i32;
+                    break;
+                }
+            }
+            if enter_portal_ind == -1 {
+                self.player.make_move(delta, 0);
+            }
+            else {
+                let new_delta = (self.portals[enter_portal_ind as usize].destination.0 - self.player.tile.0,
+                                 self.portals[enter_portal_ind as usize].destination.1 - self.player.tile.1);
+                self.portals.remove(enter_portal_ind as usize);
+                self.portals_passed += 1;
+                if self.portals_passed == PLAYER_MAX_MANA {
+                    self.player.hp = PLAYER_MAX_HP;
+                    self.portals_passed = 0;
+                }
+                self.player.make_move(new_delta, 0);
+            }
         }
         // AI Works here
         for i in 0..self.enemies.len() {
@@ -175,7 +211,21 @@ impl Game {
                 self.player.takes_damage(self.enemies[i].damage + self.rand.gen_range(-2, 2));
             }
             else {
-                self.enemies[i].make_move(mv, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
+                let mut enter_portal_ind = -1;
+                for i in 0..self.portals.len() {
+                    if (new_pos.0 == self.portals[i].tile.0) && (new_pos.1 == self.portals[i].tile.1) {
+                        enter_portal_ind = i as i32;
+                        break;
+                    }
+                }
+                if enter_portal_ind == -1 {
+                    self.enemies[i].make_move(mv, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
+                }
+                else {
+                    let new_delta = (self.portals[enter_portal_ind as usize].destination.0 - self.enemies[i].tile.0,
+                                     self.portals[enter_portal_ind as usize].destination.1 - self.enemies[i].tile.1);
+                    self.enemies[i].make_move(new_delta, self.rand.gen_range(0, unit::ANIMATION_LENGTH));
+                }
             }
         }
     }

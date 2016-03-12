@@ -6,6 +6,12 @@ use common::*;
 use sdl2_image::LoadTexture;
 use std::path::Path;
 
+pub enum Screen {
+    Start,
+    Game,
+    Death,
+}
+
 pub struct Visualizer<'a> {
     texture: Texture,
     background: Texture,
@@ -68,6 +74,19 @@ impl<'a> Visualizer<'a> {
                                  TILE_SIZE);
             let texture_rect = Rect::new((TILE_SIZE*1) as i32,
                                          ENEMY_TEXTURE_Y as i32,
+                                         TILE_SIZE,
+                                         TILE_SIZE);
+            self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
+        }
+        // PORTALS
+        for portal in game.portals.iter() {
+            let portal_pos = portal.tile;
+            let rect = Rect::new(portal_pos.0*TILE_SIZE as i32 - x_offset,
+                                 portal_pos.1*TILE_SIZE as i32 - y_offset,
+                                 TILE_SIZE,
+                                 TILE_SIZE);
+            let texture_rect = Rect::new((TILE_SIZE*0) as i32,
+                                         PORTAL_TEXTURE_Y as i32,
                                          TILE_SIZE,
                                          TILE_SIZE);
             self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
@@ -139,6 +158,26 @@ impl<'a> Visualizer<'a> {
                                      BAR_WIDTH,
                                      BAR_HEIGHT);
         self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
+        // MANA BARS
+        for i in 0..PLAYER_MAX_MANA - 1 {
+            let rect = Rect::new((DEF_WINDOW_WIDTH - BAR_WIDTH - 50) as i32 + i*20,
+                                 20 + BAR_HEIGHT as i32 + 5,
+                                 MANA_BAR_WIDTH,
+                                 BAR_HEIGHT);
+            if game.portals_passed > i {
+                let texture_rect = Rect::new(0,
+                                             MANA_BAR_Y as i32,
+                                             MANA_BAR_WIDTH,
+                                             BAR_HEIGHT);
+                self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
+            }
+            let texture_rect = Rect::new(0,
+                                         MANA_BAR_BORDER_Y as i32,
+                                         MANA_BAR_WIDTH,
+                                         BAR_HEIGHT);
+            self.renderer.copy(&self.texture, Some(texture_rect), Some(rect));
+        }
+        // BORDERS
         let _ = self.renderer.present();
     }
 }
